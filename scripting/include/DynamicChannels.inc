@@ -3,6 +3,27 @@
 #endif
 #define _DynamicChannels_included_
 
+#define DynamicChannel_V_MAJOR   2
+#define DynamicChannel_V_MINOR   2
+#define DynamicChannel_V_PATCH   0
+
+#define DynamicChannel_VERSION   "2.2.0"
+
+/**
+ * Called when the plugin becomes available.
+ * 
+ * @noreturn
+ */
+forward void DynamicChannels_OnPluginOK();
+
+/**
+ * Called when the plugin becomes unavailable.
+ * This can happen when the plugin is reloaded or unloaded.
+ * 
+ * @noreturn
+ */
+forward void DynamicChannels_OnPluginNotOK();
+
 /**
  * Provides a game_text channel for plugins to use that will prevent conflict with map channels.
  * The group number is a way of sharing the same game_text channel between certain function calls/plugins

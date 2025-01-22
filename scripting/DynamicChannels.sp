@@ -1,3 +1,4 @@
+#include <DynamicChannels>
 #include <sourcemod>
 #include <sdkhooks>
 #include <dhooks>
@@ -10,9 +11,12 @@ public Plugin myinfo =
 	name = "Dynamic Game_Text Channels",
 	author = "Vauff",
 	description = "Provides a native for plugins to implement that handles automatic game_text channel assignment based on current map channels",
-	version = "2.1.3",
+	version = DynamicChannel_VERSION,
 	url = "https://github.com/Vauff/DynamicChannels"
 };
+
+GlobalForward g_hForward_StatusOK;
+GlobalForward g_hForward_StatusNotOK;
 
 Handle g_hAcceptInput;
 ConVar g_cvWarnings;
@@ -37,6 +41,10 @@ public void OnPluginStart()
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	CreateNative("GetDynamicChannel", Native_GetDynamicChannel);
+
+	g_hForward_StatusOK = CreateGlobalForward("DynamicChannels_OnPluginOK", ET_Ignore);
+	g_hForward_StatusNotOK = CreateGlobalForward("DynamicChannels_OnPluginNotOK", ET_Ignore);
+
 	RegPluginLibrary("DynamicChannels");
 
 	return APLRes_Success;
@@ -64,6 +72,21 @@ public void OnAllPluginsLoaded()
 	DHookAddParam(g_hAcceptInput, HookParamType_Int);
 
 	CloseHandle(gameData);
+
+	SendForward_Available();
+}
+
+public void OnPluginPauseChange(bool pause)
+{
+	if (pause)
+		SendForward_NotAvailable();
+	else
+		SendForward_Available();
+}
+
+public void OnPluginEnd()
+{
+	SendForward_NotAvailable();
 }
 
 public void OnMapStart()
@@ -301,4 +324,16 @@ bool IsValidClient(int client, bool nobots = false)
 		return false;
 
 	return IsClientInGame(client);
+}
+
+stock void SendForward_Available()
+{
+	Call_StartForward(g_hForward_StatusOK);
+	Call_Finish();
+}
+
+stock void SendForward_NotAvailable()
+{
+	Call_StartForward(g_hForward_StatusNotOK);
+	Call_Finish();
 }
